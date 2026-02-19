@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIGNAL ARCHIVE SYSTEM</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="scanlines"></div>
+    
+    <div class="container">
+        <header>
+            <h1>═══ SIGNAL ARCHIVE SYSTEM v0.1 ═══</h1>
+            <div class="system-info">
+                <span id="session-time">SESSION: 00:00:00</span>
+                <span id="total-matches">MATCHES: 0</span>
+                <span id="total-docs">DOCUMENTS: 0</span>
+            </div>
+        </header>
+
+        <div class="main-grid">
+            <!-- Left Column: Match-3 -->
+            <div class="panel match3-panel">
+                <div class="panel-header">┌─ TRANSMISSION GRID ────────────┐</div>
+                <div id="match3-grid" class="match3-grid"></div>
+                <div class="match3-info">
+                    <span id="combo-display"></span>
+                    <span id="fragments-count">FRAGMENTS: 0</span>
+                </div>
+                <div class="panel-footer">└────────────────────────────────┘</div>
+            </div>
+
+            <!-- Right Column: Documents & Decoders -->
+            <div class="right-column">
+                <!-- Documents Panel -->
+                <div class="panel documents-panel">
+                    <div class="panel-header">┌─ DOCUMENTS ───────────────────┐</div>
+                    <div id="documents-container" class="documents-container">
+                        <div class="folder" data-folder="inbox">
+                            <div class="folder-name">📁 inbox/ <span class="doc-count">(0)</span></div>
+                            <div class="folder-contents" id="inbox"></div>
+                        </div>
+                        <div class="folder" data-folder="archived">
+                            <div class="folder-name">📁 archived/ <span class="doc-count">(0)</span></div>
+                            <div class="folder-contents" id="archived"></div>
+                        </div>
+                        <div class="folder" data-folder="priority">
+                            <div class="folder-name">📁 priority/ <span class="doc-count">(0)</span></div>
+                            <div class="folder-contents" id="priority"></div>
+                        </div>
+                    </div>
+                    <div class="panel-footer">└───────────────────────────────┘</div>
+                </div>
+
+                <!-- Decoders Panel -->
+                <div class="panel decoders-panel">
+                    <div class="panel-header">┌─ SIGNAL DECODERS ─────────────┐</div>
+                    <div id="decoders-container" class="decoders-container"></div>
+                    <div class="panel-footer">└───────────────────────────────┘</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Console Output -->
+        <div class="panel console-panel">
+            <div class="panel-header">┌─ SYSTEM LOG ──────────────────────────────────────┐</div>
+            <div id="console" class="console"></div>
+            <div class="panel-footer">└───────────────────────────────────────────────────┘</div>
+            <div class="command-line">
+                <span class="prompt">&gt;</span>
+                <span class="cursor">_</span>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <button id="save-btn" class="terminal-btn">[ SAVE ]</button>
+            <button id="load-btn" class="terminal-btn">[ LOAD ]</button>
+            <button id="reset-btn" class="terminal-btn">[ RESET ]</button>
+            <button id="export-btn" class="terminal-btn">[ EXPORT ]</button>
+            <button id="import-btn" class="terminal-btn">[ IMPORT ]</button>
+        </div>
+    </div>
+
+    <!-- Document Modal -->
+    <div id="doc-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span id="doc-title"></span>
+                <button class="close-btn">[X]</button>
+            </div>
+            <div id="doc-content" class="doc-content"></div>
+            <div class="doc-metadata">
+                <span id="doc-timestamp"></span>
+                <span id="doc-frequency"></span>
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
