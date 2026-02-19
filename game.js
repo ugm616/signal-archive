@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════
-// SIGNAL ARCHIVE SYSTEM - GAME ENGINE
+// SIGNAL ARCHIVE SYSTEM - GAME ENGINE v0.2
 // ═══════════════════════════════════════════════════════
 
 class Game {
@@ -19,14 +19,29 @@ class Game {
             totalDocuments: 0,
             fragments: 0,
             sessionStart: Date.now(),
-            lastSave: Date.now()
+            lastSave: Date.now(),
+            milestones: {
+                m100: false,
+                m500: false,
+                m1000: false,
+                m5000: false,
+                m10000: false
+            }
         };
         this.symbols = [
             { id: 'red', char: '█', color: 'red', unlocked: true },
             { id: 'green', char: '▓', color: 'green', unlocked: true },
             { id: 'blue', char: '▒', color: 'blue', unlocked: true },
-            { id: 'yellow', char: '░', color: 'yellow', unlocked: true }
+            { id: 'yellow', char: '░', color: 'yellow', unlocked: true },
+            { id: 'triangle', char: '△', color: 'cyan', unlocked: false },
+            { id: 'diamond', char: '◇', color: 'magenta', unlocked: false }
         ];
+        
+        this.uiState = {
+            glitchLevel: 0,
+            colorShift: 0,
+            systemVersion: '0.1'
+        };
         
         this.init();
     }
@@ -176,6 +191,9 @@ class Game {
             this.generateDocument('transmission');
         }
         
+        // Check milestones
+        this.checkMilestones();
+        
         setTimeout(() => {
             this.clearMatches(matchIndices);
             this.updateDisplay();
@@ -212,12 +230,126 @@ class Game {
         setTimeout(() => this.checkMatches(), 100);
     }
 
+    checkMilestones() {
+        const m = this.stats.totalMatches;
+        
+        if (m >= 100 && !this.stats.milestones.m100) {
+            this.stats.milestones.m100 = true;
+            this.triggerMilestone('m100');
+        }
+        if (m >= 500 && !this.stats.milestones.m500) {
+            this.stats.milestones.m500 = true;
+            this.triggerMilestone('m500');
+        }
+        if (m >= 1000 && !this.stats.milestones.m1000) {
+            this.stats.milestones.m1000 = true;
+            this.triggerMilestone('m1000');
+        }
+        if (m >= 5000 && !this.stats.milestones.m5000) {
+            this.stats.milestones.m5000 = true;
+            this.triggerMilestone('m5000');
+        }
+        if (m >= 10000 && !this.stats.milestones.m10000) {
+            this.stats.milestones.m10000 = true;
+            this.triggerMilestone('m10000');
+        }
+    }
+
+    triggerMilestone(milestone) {
+        const events = {
+            m100: () => {
+                this.log('═══════════════════════════════', 'warning');
+                this.log('MILESTONE: 100 MATCHES', 'warning');
+                this.log('Pattern recognition improving...', 'info');
+                this.log('═══════════════════════════════', 'warning');
+                this.generateDocument('milestone', 'SYSTEM', 'MILESTONE_100');
+            },
+            m500: () => {
+                this.log('═══════════════════════════════', 'warning');
+                this.log('MILESTONE: 500 MATCHES', 'warning');
+                this.log('New symbols detected in signal...', 'info');
+                this.log('═══════════════════════════════', 'warning');
+                this.unlockSymbol('triangle');
+                this.generateDocument('milestone', 'SYSTEM', 'MILESTONE_500');
+                this.uiState.glitchLevel = 1;
+            },
+            m1000: () => {
+                this.log('═══════════════════════════════', 'error');
+                this.log('MILESTONE: 1000 MATCHES', 'error');
+                this.log('WARNING: Anomalous patterns detected', 'error');
+                this.log('═══════════════════════════════', 'error');
+                this.generateDocument('incident', 'ALERT', 'INCIDENT_001');
+                this.uiState.glitchLevel = 2;
+                this.startUIGlitch();
+            },
+            m5000: () => {
+                this.log('═══════════════════════════════', 'error');
+                this.log('M̴I̵L̷E̸S̴T̵O̵N̸E̷:̶ ̷5̴0̵0̴0̶ ̸M̸A̴T̶C̵H̷E̴S̶', 'error');
+                this.log('SYSTEM INTEGRITY: COMPROMISED', 'error');
+                this.log('═══════════════════════════════', 'error');
+                this.unlockSymbol('diamond');
+                this.generateDocument('redacted', 'CLASSIFIED', 'TRUTH_FRAGMENT');
+                this.uiState.glitchLevel = 3;
+                this.uiState.colorShift = 1;
+                document.querySelector('header h1').textContent = '═══ S͓̽I͓̽G͓̽N͓̽A͓̽L͓̽ ͓̽A͓̽R͓̽C͓̽H͓̽I͓̽V͓̽E͓̽ ͓̽S͓̽Y͓̽S͓̽T͓̽E͓̽M͓̽ ͓̽v͓̽0͓̽.͓̽2͓̽ ═══';
+            },
+            m10000: () => {
+                this.log('═══════════════════════════════', 'error');
+                this.log('E̸̢̛͉̻̭̰̱͍̞̅̾̊̇̓R̸̡̛̩͉̮̳̲̞͇̽̐R̸̨̨̭̗̹̹̘͕͂́̀͊Ǫ̸̧͕͖̟̩͐́̈́R̸̡̹̙̫̰̹̝̊', 'error');
+                this.log('YOU SHOULD NOT BE HERE', 'error');
+                this.log('═══════════════════════════════', 'error');
+                this.generateDocument('truth', 'UNKNOWN', 'REVELATION');
+                this.uiState.glitchLevel = 4;
+                this.uiState.colorShift = 2;
+            }
+        };
+        
+        if (events[milestone]) {
+            events[milestone]();
+        }
+    }
+
+    unlockSymbol(symbolId) {
+        const symbol = this.symbols.find(s => s.id === symbolId);
+        if (symbol && !symbol.unlocked) {
+            symbol.unlocked = true;
+            this.log(`NEW SYMBOL UNLOCKED: ${symbol.char}`, 'warning');
+        }
+    }
+
+    startUIGlitch() {
+        setInterval(() => {
+            if (this.uiState.glitchLevel > 0 && Math.random() < 0.1) {
+                const header = document.querySelector('header h1');
+                const original = header.textContent;
+                const glitched = this.glitchText(original);
+                header.textContent = glitched;
+                setTimeout(() => {
+                    header.textContent = original;
+                }, 100 + Math.random() * 200);
+            }
+        }, 5000);
+    }
+
+    glitchText(text) {
+        const glitchChars = '█▓▒░▀▄▌▐│┤╡╢╖╕╣║╗╝╜╛┐└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌';
+        let result = '';
+        for (let char of text) {
+            if (Math.random() < 0.3) {
+                result += glitchChars[Math.floor(Math.random() * glitchChars.length)];
+            } else {
+                result += char;
+            }
+        }
+        return result;
+    }
+
     initDecoders() {
         this.decoders = [
             {
                 id: 'VLF',
                 name: 'VLF - Very Low Frequency',
-                rate: 0.5, // docs per minute
+                rate: 0.5,
                 progress: 0,
                 unlocked: true,
                 active: true
@@ -269,20 +401,46 @@ class Game {
         });
     }
 
-    generateDocument(type = 'transmission', frequency = 'VLF') {
+    generateDocument(type = 'transmission', frequency = 'VLF', template = null) {
         const docId = `doc_${String(this.stats.totalDocuments).padStart(4, '0')}`;
         const timestamp = new Date().toISOString();
         
         const templates = {
             transmission: [
-                `SIGNAL DETECTED AT ${Math.floor(Math.random() * 360)} DEGREES\nSTRENGTH: ${Math.floor(Math.random() * 100)}%\nINTERFERENCE: MINIMAL`,
-                `TRANSMISSION LOG ${docId}\nFREQUENCY: ${frequency}\nCOORDINATES: ${Math.random().toFixed(6)}, ${Math.random().toFixed(6)}`,
-                `DECODING SEQUENCE INITIATED...\nPATTERN MATCH: ${Math.floor(Math.random() * 100)}%\nSTATUS: INCOMPLETE`,
-                `FRAGMENT RECOVERED\nSOURCE: UNKNOWN\nTIMESTAMP: ${new Date().toLocaleTimeString()}\nCONTENT: [ENCRYPTED]`
-            ]
+                `SIGNAL DETECTED AT ${Math.floor(Math.random() * 360)} DEGREES\nSTRENGTH: ${Math.floor(Math.random() * 100)}%\nINTERFERENCE: MINIMAL\n\nPattern analysis suggests intentional modulation.\nSource: Unknown`,
+                `TRANSMISSION LOG ${docId}\nFREQUENCY: ${frequency}\nCOORDINATES: ${Math.random().toFixed(6)}, ${Math.random().toFixed(6)}\n\nRepeating sequence detected in carrier wave.\nThis is not random noise.`,
+                `DECODING SEQUENCE INITIATED...\nPATTERN MATCH: ${Math.floor(Math.random() * 100)}%\nSTATUS: INCOMPLETE\n\nNote: Previous operator flagged similar patterns.\nRecommend cross-reference with archived docs.`,
+                `FRAGMENT RECOVERED\nSOURCE: UNKNOWN\nTIMESTAMP: ${new Date().toLocaleTimeString()}\nCONTENT: [ENCRYPTED]\n\nDecryption attempts: ${Math.floor(Math.random() * 50)}\nEstimated completion: UNKNOWN`,
+                `AUTOMATED REPORT ${docId}\n\nSignal strength increasing over time.\nSuggests approaching source OR\nsource is amplifying intentionally.\n\nRecommendation: Continue monitoring.`,
+                `ANOMALY DETECTED\n\nTransmission contains embedded metadata:\n- Timestamp: ${new Date().toISOString()}\n- Coordinates: [REDACTED]\n- Origin: ERROR - OUTSIDE OBSERVABLE RANGE\n\nThis should not be possible.`,
+                `PERSONNEL NOTE - PREVIOUS OPERATOR\n\n"I've been doing this for 3 months now.\nThe patterns are getting clearer.\nI think they're trying to communicate.\n\nOr maybe I'm going crazy. Hard to tell."\n\n- Operator ${Math.floor(Math.random() * 100)}`,
+                `SYSTEM ALERT\n\nIdle generation exceeded expected rate by ${Math.floor(Math.random() * 200)}%\n\nPossible causes:\n1. Hardware malfunction\n2. Software error\n3. External interference\n4. Other\n\nInvestigating...`,
+                `DECODED MESSAGE FRAGMENT\n\n"...ello? Can you... hear... receiving?\n\nIf you're reading this, please respond.\nWe've been trying to reach you for...\n\n[SIGNAL LOST]"`,
+                `CROSS-REFERENCE ALERT\n\nThis transmission matches:\n- doc_${String(Math.floor(Math.random() * this.stats.totalDocuments)).padStart(4, '0')}.txt (${Math.floor(Math.random() * 100)}% match)\n\nPatterns suggest coordinated broadcast.\nSource may be multiple transmitters\nor single source with complex modulation.`
+            ],
+            milestone: {
+                'MILESTONE_100': `═══ MILESTONE REPORT ═══\n\n100 transmission matches processed.\n\nPattern recognition algorithms show improvement.\nDecoder efficiency increased by 15%.\n\nNote: Some transmissions contain non-random elements.\nRecommend continued analysis.\n\n═══════════════════════`,
+                'MILESTONE_500': `═══ MILESTONE REPORT ═══\n\n500 matches processed.\n\nWARNING: New symbol types detected in signal.\nUpdating decoder parameters...\n\nThese symbols were not in the original specifications.\nWhere are they coming from?\n\n═══════════════════════`,
+            },
+            incident: {
+                'INCIDENT_001': `[INCIDENT REPORT - AUTOMATED]\n\nINCIDENT ID: INC-${Date.now()}\nSEVERITY: MEDIUM\n\nAnomaly detected in transmission patterns.\nMatches exceed statistical probability for random generation.\n\nRecommendation:\n- Review previous operator notes\n- Check hardware integrity\n- Consider external factors\n\nStatus: UNDER INVESTIGATION`,
+            },
+            redacted: {
+                'TRUTH_FRAGMENT': `[CLASSIFIED - LEVEL 4 CLEARANCE]\n\nTO: Current Operator\nFROM: [REDACTED]\nRE: Project Status\n\nYou need to understand what you're really doing here.\n\nThis isn't about archiving old transmissions.\nThe signals are REAL. They're CURRENT.\nAnd something is responding to your matches.\n\nEvery pattern you create is a message.\nEvery document you generate is a reply.\n\nYou're not monitoring.\nYou're █████████████████████.\n\n[REMAINDER CORRUPTED]`,
+            },
+            truth: {
+                'REVELATION': `You've been here long enough now.\n\nLet me tell you what's really happening.\n\nThe match-3 grid? That's a transmission array.\nEach match sends a signal into deep space.\n\nThe documents? They're responses.\nSomething out there is listening.\nAnd it's talking back.\n\nThe "previous operators" in those files?\nThey're not previous.\nThey're parallel.\nRunning the same program.\nSending the same signals.\n\nYou are one of thousands.\nAll of you matching.\nAll of you transmitting.\n\nAnd something is using your collective output\nto ████████████████████████████████.\n\nYou can stop playing now.\n\nOr you can keep going.\n\nEither way, the signal continues.\n\n> _`
+            }
         };
         
-        const content = templates[type][Math.floor(Math.random() * templates[type].length)];
+        let content;
+        if (template && templates[type] && templates[type][template]) {
+            content = templates[type][template];
+        } else if (Array.isArray(templates[type])) {
+            content = templates[type][Math.floor(Math.random() * templates[type].length)];
+        } else {
+            content = `TRANSMISSION DATA\nFREQUENCY: ${frequency}\nTIMESTAMP: ${timestamp}`;
+        }
         
         const doc = {
             id: docId,
@@ -320,7 +478,6 @@ class Game {
                 folderEl.appendChild(docEl);
             });
             
-            // Update folder count
             const folder = document.querySelector(`[data-folder="${folderName}"]`);
             const countSpan = folder.querySelector('.doc-count');
             countSpan.textContent = `(${this.folders[folderName].length})`;
@@ -339,9 +496,8 @@ class Game {
 
     startGameLoop() {
         setInterval(() => {
-            // Update decoders
             this.decoders.filter(d => d.active).forEach(decoder => {
-                decoder.progress += (decoder.rate / 60) * (1000 / 1000); // per second
+                decoder.progress += (decoder.rate / 60);
                 
                 if (decoder.progress >= 100) {
                     decoder.progress = 0;
@@ -353,14 +509,12 @@ class Game {
             this.updateDisplay();
         }, 1000);
         
-        // Auto-save every 30 seconds
         setInterval(() => {
             this.autoSave();
         }, 30000);
     }
 
     updateDisplay() {
-        // Session time
         const sessionTime = Date.now() - this.stats.sessionStart;
         const hours = Math.floor(sessionTime / 3600000);
         const minutes = Math.floor((sessionTime % 3600000) / 60000);
@@ -372,12 +526,19 @@ class Game {
         document.getElementById('total-docs').textContent = `DOCUMENTS: ${this.stats.totalDocuments}`;
         document.getElementById('fragments-count').textContent = `FRAGMENTS: ${this.stats.fragments}`;
         
-        // Check for unlocks
         this.checkUnlocks();
+        this.applyUIEffects();
+    }
+
+    applyUIEffects() {
+        if (this.uiState.colorShift === 1) {
+            document.documentElement.style.setProperty('--terminal-green', '#ff4100');
+        } else if (this.uiState.colorShift === 2) {
+            document.documentElement.style.setProperty('--terminal-green', '#ff00ff');
+        }
     }
 
     checkUnlocks() {
-        // Unlock LF decoder after 50 documents
         if (!this.decoders[1].unlocked && this.stats.totalDocuments >= 50) {
             this.decoders[1].unlocked = true;
             this.decoders[1].active = true;
@@ -385,7 +546,6 @@ class Game {
             this.renderDecoders();
         }
         
-        // Unlock MF decoder after 150 documents
         if (!this.decoders[2].unlocked && this.stats.totalDocuments >= 150) {
             this.decoders[2].unlocked = true;
             this.decoders[2].active = true;
@@ -403,7 +563,6 @@ class Game {
             if (idleMinutes > 0) {
                 this.log(`SYSTEM WAS IDLE FOR ${idleMinutes} MINUTES`, 'info');
                 
-                // Generate documents based on idle time
                 const savedData = JSON.parse(localStorage.getItem('signal_archive_save'));
                 if (savedData && savedData.decoders) {
                     savedData.decoders.filter(d => d.active).forEach(decoder => {
@@ -426,22 +585,24 @@ class Game {
         line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
         console.appendChild(line);
         console.scrollTop = console.scrollHeight;
+        
+        // Keep console from getting too long
+        while (console.children.length > 100) {
+            console.removeChild(console.firstChild);
+        }
     }
 
     initEventListeners() {
-        // Save button
         document.getElementById('save-btn').addEventListener('click', () => {
             this.saveGame();
             this.log('GAME SAVED', 'success');
         });
         
-        // Load button
         document.getElementById('load-btn').addEventListener('click', () => {
             this.loadGame();
             this.log('GAME LOADED', 'success');
         });
         
-        // Reset button
         document.getElementById('reset-btn').addEventListener('click', () => {
             if (confirm('RESET ALL PROGRESS? THIS CANNOT BE UNDONE.')) {
                 localStorage.removeItem('signal_archive_save');
@@ -450,7 +611,6 @@ class Game {
             }
         });
         
-        // Export button
         document.getElementById('export-btn').addEventListener('click', () => {
             const data = this.getSaveData();
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -462,7 +622,6 @@ class Game {
             this.log('SAVE EXPORTED', 'success');
         });
         
-        // Import button
         document.getElementById('import-btn').addEventListener('click', () => {
             const input = document.createElement('input');
             input.type = 'file';
@@ -485,12 +644,10 @@ class Game {
             input.click();
         });
         
-        // Modal close button
         document.querySelector('.close-btn').addEventListener('click', () => {
             document.getElementById('doc-modal').classList.remove('active');
         });
         
-        // Click outside modal to close
         document.getElementById('doc-modal').addEventListener('click', (e) => {
             if (e.target.id === 'doc-modal') {
                 document.getElementById('doc-modal').classList.remove('active');
@@ -504,7 +661,8 @@ class Game {
             documents: this.documents,
             folders: this.folders,
             decoders: this.decoders,
-            symbols: this.symbols
+            symbols: this.symbols,
+            uiState: this.uiState
         };
     }
 
@@ -529,6 +687,7 @@ class Game {
             this.folders = saveData.folders;
             this.decoders = saveData.decoders;
             this.symbols = saveData.symbols;
+            this.uiState = saveData.uiState || this.uiState;
             
             this.renderDocuments();
             this.renderDecoders();
@@ -537,7 +696,6 @@ class Game {
     }
 }
 
-// Initialize game when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     window.game = new Game();
 });
